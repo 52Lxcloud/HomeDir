@@ -1,0 +1,42 @@
+{
+  "name": "homedir",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix"
+  },
+  "dependencies": {
+    "@number-flow/react": "^0.6.0",
+    "better-sqlite3": "^12.9.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "geist": "^1.7.0",
+    "lucide-react": "^1.8.0",
+    "next": "^16.2.4",
+    "next-themes": "^0.4.6",
+    "radix-ui": "^1.4.3",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "server-only": "^0.0.1",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^2.6.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.2",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20.10.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.4",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.3.0"
+  }
+}
