@@ -37,12 +37,12 @@ export function ShortcutHints({
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "Meta" || e.key === "Control") return setShow(true);
+      if (e.key === (isMac ? "Meta" : "Control")) return setShow(true);
       if (!(e.metaKey || e.ctrlKey)) return;
       const s = shortcuts.find((s) => s.key.toLowerCase() === e.key.toLowerCase());
       if (s && s.key !== "K") { e.preventDefault(); s.run(); setShow(false); }
     };
-    const up = (e: KeyboardEvent) => { if (e.key === "Meta" || e.key === "Control") setShow(false); };
+    const up = (e: KeyboardEvent) => { if (e.key === (isMac ? "Meta" : "Control")) setShow(false); };
     const blur = () => setShow(false);
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
