@@ -1,5 +1,7 @@
 node_modules
 .next
-data
 .git
+data
 *.md
+Dockerfile
+docker-compose.yml
