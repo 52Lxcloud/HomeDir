@@ -40,7 +40,7 @@ export function AdminAbout() {
         <a href="https://github.com/52Lxcloud" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 border-t px-4 py-2.5 text-sm transition-colors hover:bg-muted/50">
           <GithubIcon className="size-3.5 text-muted-foreground" />
           <span className="text-muted-foreground">GitHub</span>
-          <span className="ml-auto text-xs text-muted-foreground/60">@Lxcloud</span>
+          <span className="ml-auto text-xs text-muted-foreground/60">@52Lxcloud</span>
         </a>
       </div>
     </div>
