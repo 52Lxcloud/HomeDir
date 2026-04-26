@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import type { SiteData } from "@/lib/types";
 import { getIcon, getIconUrl, commonIcons } from "@/lib/icons";
 import {
@@ -8,6 +8,7 @@ import {
   updateSiteAction,
   deleteSiteAction,
   fetchFaviconAction,
+  uploadIconAction,
 } from "@/app/dash/actions";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   Dialog,
@@ -28,7 +28,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Loader2, Save, AlertTriangle, ChevronRight, ImageDown, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Save, AlertTriangle, ChevronRight, ImageDown, Upload, X } from "lucide-react";
 
 interface SiteFormData {
   name: string;
@@ -67,6 +67,8 @@ export function AdminSites({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [fetchingIcon, setFetchingIcon] = useState(false);
+  const [uploadingIcon, setUploadingIcon] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   const toggleGroup = (cat: string) => {
@@ -241,7 +243,7 @@ export function AdminSites({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
+          <div className="space-y-5 py-3">
             {/* 名称 + 图标 */}
             <div className="flex items-center gap-2">
               {form.icon_url ? (
@@ -275,6 +277,40 @@ export function AdminSites({
                 </SelectContent>
               </Select>
               )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setUploadingIcon(true);
+                  try {
+                    const fd = new FormData();
+                    fd.append("file", file);
+                    const result = await uploadIconAction(fd);
+                    if (result.success) {
+                      updateField("icon_url", result.data!);
+                      toast.success("图标上传成功");
+                    } else {
+                      toast.error(result.error);
+                    }
+                  } finally {
+                    setUploadingIcon(false);
+                    e.target.value = "";
+                  }
+                }}
+              />
+              <button
+                type="button"
+                disabled={uploadingIcon}
+                onClick={() => fileInputRef.current?.click()}
+                className="flex size-8 shrink-0 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground disabled:opacity-40"
+                title="上传图标"
+              >
+                {uploadingIcon ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}
+              </button>
               <Input
                 value={form.name}
                 onChange={(e) => updateField("name", e.target.value)}
@@ -283,62 +319,59 @@ export function AdminSites({
               />
             </div>
 
-            {/* 分类 */}
-            <div className="flex items-start gap-2">
-              <Label className="mt-1.5 w-8 shrink-0 text-center text-xs text-muted-foreground">分类</Label>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap gap-1.5">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => updateField("category", cat)}
-                      className={`rounded-md border px-2.5 py-1 text-xs transition-colors ${
-                        form.category === cat
-                          ? "border-foreground/20 bg-foreground text-background"
-                          : "border-border bg-transparent text-muted-foreground hover:border-foreground/20 hover:text-foreground"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => updateField("category", "")}
-                    className={`rounded-md border border-dashed px-2.5 py-1 text-xs transition-colors ${
-                      !categories.includes(form.category)
-                        ? "border-foreground/20 bg-foreground text-background"
-                        : "border-border text-muted-foreground/50 hover:border-foreground/20 hover:text-foreground"
-                    }`}
-                  >
-                    +自定义
-                  </button>
-                </div>
-                {!categories.includes(form.category) && (
-                  <Input
-                    value={form.category}
-                    onChange={(e) => updateField("category", e.target.value)}
-                    placeholder="输入新分类名"
-                    className="mt-2 h-7 text-xs"
-                    autoFocus
-                  />
-                )}
-              </div>
-            </div>
-
             {/* 描述 */}
-            <div className="flex items-center gap-2">
-              <Label className="w-8 shrink-0 text-center text-xs text-muted-foreground">描述</Label>
+            <div>
               <Input
                 value={form.desc}
                 onChange={(e) => updateField("desc", e.target.value)}
-                placeholder="可选，简短描述"
-                className="h-8 flex-1"
+                placeholder="简短描述（可选）"
+                className="h-8"
               />
             </div>
 
+            {/* 分类 */}
+            <div>
+              <Label className="mb-2 block text-[11px] text-muted-foreground">分类</Label>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => updateField("category", cat)}
+                    className={`rounded-md border px-2.5 py-1 text-xs transition-colors ${
+                      form.category === cat
+                        ? "border-foreground/20 bg-foreground text-background"
+                        : "border-border bg-transparent text-muted-foreground hover:border-foreground/20 hover:text-foreground"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => updateField("category", "")}
+                  className={`rounded-md border border-dashed px-2.5 py-1 text-xs transition-colors ${
+                    !categories.includes(form.category)
+                      ? "border-foreground/20 bg-foreground text-background"
+                      : "border-border text-muted-foreground/50 hover:border-foreground/20 hover:text-foreground"
+                  }`}
+                >
+                  +自定义
+                </button>
+              </div>
+              {!categories.includes(form.category) && (
+                <Input
+                  value={form.category}
+                  onChange={(e) => updateField("category", e.target.value)}
+                  placeholder="输入新分类名"
+                  className="mt-2 h-7 text-xs"
+                  autoFocus
+                />
+              )}
+            </div>
+
             {/* 地址 */}
-            <div className="rounded-lg border bg-muted/20 p-3">
+            <div className="rounded-lg border bg-muted/20 p-3.5">
               <div className="mb-2 flex items-center justify-between">
                 <div className="text-[11px] font-medium text-muted-foreground">访问地址 <span className="text-muted-foreground/40">至少填一个</span></div>
                 <button
@@ -351,7 +384,7 @@ export function AdminSites({
                     try {
                       const result = await fetchFaviconAction(url);
                       if (result.success) {
-                        updateField("icon_url", result.data);
+                        updateField("icon_url", result.data!);
                         toast.success("图标获取成功");
                       } else {
                         toast.error(result.error);
@@ -390,18 +423,18 @@ export function AdminSites({
 
             {/* 排序 */}
             <div className="flex items-center gap-2">
-              <Label className="w-8 shrink-0 text-center text-xs text-muted-foreground">排序</Label>
+              <Label className="shrink-0 text-[11px] text-muted-foreground">排序</Label>
               <Input
                 type="number"
                 value={form.sort_order}
                 onChange={(e) => updateField("sort_order", parseInt(e.target.value) || 0)}
-                className="h-8 w-20"
+                className="h-7 w-16 text-xs"
               />
-              <span className="text-[10px] text-muted-foreground/50">越小越靠前</span>
+              <span className="text-[10px] text-muted-foreground/40">越小越靠前</span>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 border-t pt-3">
+          <div className="flex justify-end gap-2 border-t pt-4">
             <Button variant="ghost" size="sm" onClick={() => setEditDialogOpen(false)}>
               取消
             </Button>

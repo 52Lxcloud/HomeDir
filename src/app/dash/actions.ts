@@ -27,7 +27,7 @@ interface SiteFormInput {
   sort_order: number;
 }
 
-type ActionResult = { success: true } | { success: false; error: string };
+type ActionResult<T = void> = { success: true; data?: T } | { success: false; error: string };
 
 function validate(data: SiteFormInput): string | null {
   if (!data.name || data.name.trim().length === 0) return "名称不能为空";
@@ -37,7 +37,7 @@ function validate(data: SiteFormInput): string | null {
   return null;
 }
 
-async function requireAuth(): Promise<ActionResult | null> {
+async function requireAuth<T = void>(): Promise<ActionResult<T> | null> {
   if (!(await isAuthenticated())) return { success: false, error: "未登录" };
   return null;
 }
@@ -131,8 +131,9 @@ export async function deleteCategoryAction(name: string): Promise<ActionResult> 
 }
 
 // 抓取 favicon 并保存到本地文件
-export async function fetchFaviconAction(url: string): Promise<{ success: true; data: string } | { success: false; error: string }> {
-  if (!(await isAuthenticated())) return { success: false, error: "未登录" };
+export async function fetchFaviconAction(url: string): Promise<ActionResult<string>> {
+  const authErr = await requireAuth<string>();
+  if (authErr) return authErr;
   try {
     const { origin, hostname, protocol } = new URL(url);
     const tryFetch = async (u: string): Promise<Buffer | null> => {
@@ -183,6 +184,23 @@ export async function fetchFaviconAction(url: string): Promise<{ success: true; 
     return { success: true, data: filename };
   } catch {
     return { success: false, error: "URL 格式无效" };
+  }
+}
+
+// 上传图标
+export async function uploadIconAction(formData: FormData): Promise<ActionResult<string>> {
+  const authErr = await requireAuth<string>();
+  if (authErr) return authErr;
+  const file = formData.get("file") as File | null;
+  if (!file || file.size === 0) return { success: false, error: "请选择文件" };
+  if (file.size > 2 * 1024 * 1024) return { success: false, error: "文件不能超过 2MB" };
+  if (!/^image\//.test(file.type) && !file.name.endsWith(".ico")) return { success: false, error: "仅支持图片文件" };
+  try {
+    const buf = Buffer.from(await file.arrayBuffer());
+    const filename = saveIcon(buf);
+    return { success: true, data: filename };
+  } catch {
+    return { success: false, error: "上传失败" };
   }
 }
 
