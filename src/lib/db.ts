@@ -115,6 +115,7 @@ export interface SiteConfig {
   site_name: string;
   site_description: string;
   footer_text: string;
+  auto_detect_network: string;
   admin_password: string;
   admin_session: string;
 }
@@ -123,6 +124,7 @@ const defaultConfig: SiteConfig = {
   site_name: "HomeDir",
   site_description: "快速访问内外网服务的导航中心",
   footer_text: "© 2026 Lxcloud · Powered by <a href=\"https://github.com/52Lxcloud/HomeDir\">HomeDir</a>",
+  auto_detect_network: "false",
   admin_password: "",
   admin_session: "",
 };
@@ -135,6 +137,7 @@ export function getConfig(): SiteConfig {
     site_name: map.get("site_name") || defaultConfig.site_name,
     site_description: map.get("site_description") || defaultConfig.site_description,
     footer_text: map.get("footer_text") || defaultConfig.footer_text,
+    auto_detect_network: map.get("auto_detect_network") ?? defaultConfig.auto_detect_network,
     admin_password: map.get("admin_password") || "",
     admin_session: map.get("admin_session") || "",
   };

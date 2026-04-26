@@ -148,7 +148,7 @@ async function probeInternal(url: string, timeout = 2000): Promise<boolean> {
 }
 
 async function detectNetwork(internalUrls: string[]): Promise<boolean> {
-  if (internalUrls.length === 0) return true;
+  if (internalUrls.length === 0) return false;
   // 取前 3 个内网地址并发探测，任一可达即为内网
   const targets = internalUrls.slice(0, 3);
   const results = await Promise.all(targets.map((url) => probeInternal(url)));
@@ -159,22 +159,24 @@ export function HomePage({
   sites,
   categories,
   shortcuts,
+  autoDetectNetwork,
 }: {
   sites: SiteData[];
   categories: string[];
   shortcuts: ShortcutConfig[];
+  autoDetectNetwork: boolean;
 }) {
   const [active, setActive] = useState(ALL);
-  const [isInternal, setIsInternal] = useState(true);
+  const [isInternal, setIsInternal] = useState(false);
   const [manualOverride, setManualOverride] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  // 每次加载自动探测，手动切换后跳过
+  // 自动探测开启时检测内外网，手动切换后跳过
   useEffect(() => {
-    if (manualOverride) return;
+    if (!autoDetectNetwork || manualOverride) return;
     const urls = [...new Set(sites.map((s) => s.url.internal))].filter(Boolean);
     detectNetwork(urls).then(setIsInternal);
-  }, [sites, manualOverride]);
+  }, [sites, manualOverride, autoDetectNetwork]);
 
   const handleToggle = useCallback((val: boolean) => {
     setManualOverride(true);

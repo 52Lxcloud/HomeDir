@@ -21,7 +21,7 @@ export default async function Page() {
 
       {/* 交互区域 — Client Component */}
       <div className="flex-1">
-        <HomePage sites={sites} categories={categories} shortcuts={shortcuts} />
+        <HomePage sites={sites} categories={categories} shortcuts={shortcuts} autoDetectNetwork={config.auto_detect_network === "true"} />
       </div>
 
       {/* 底部 */}

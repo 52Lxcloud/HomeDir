@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import type { SiteData } from "@/lib/types";
-type SafeConfig = { site_name: string; site_description: string; footer_text: string };
+type SafeConfig = { site_name: string; site_description: string; footer_text: string; auto_detect_network: string };
 import { AdminOverview } from "@/components/admin/overview";
 import { AdminSites } from "@/components/admin/sites";
 import { AdminCategories } from "@/components/admin/categories";
